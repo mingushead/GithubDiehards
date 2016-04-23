@@ -1,0 +1,231 @@
+<!doctype html>
+<html>
+	<head>
+		<meta charset="utf-8" />
+		<title>Sample Three.js</title>
+		<style>
+		</style>
+	</head>
+	<body>
+		<span>Spheres:</span>
+		<button id="btnAnimLeft">to left </button>
+		<button id="btnAnimRight">to right </button>
+		<button id="btnAnimCentre">to centre </button>
+		<span>Cubes:</span>
+		<button id="btnAnimLeftCube">to left </button>
+		<button id="btnAnimCentreCube">to centre </button>
+		<button id="btnAnimRightCube">to right </button>
+		<div id="container">
+
+			
+			
+		</div>
+	</body>
+	<link href="style.css" rel="stylesheet">
+	<script src="js/jquery.min.js"></script>
+	<script src="js/old-three.min.js"></script>
+	<script src="js/tween.js"></script>
+	<script src="js/anim_utils.js"></script>
+	<script type="text/javascript" src="./data/data.json"></script>
+	
+	<script type="text/javascript">
+	var APP = {};
+
+	$.getJSON("./data/data.json", function(_data) {
+		APP.data = _data.reverse();
+		init();
+	});
+	//var data = JSON.parse(data);
+	//console.log data;
+	console.log("loading : stage 1");
+	// @see http://paulirish.com/2011/requestanimationframe-for-smart-animating/
+	window.requestAnimFrame = (function(){
+      return  window.requestAnimationFrame       || 
+              window.webkitRequestAnimationFrame || 
+              window.mozRequestAnimationFrame    || 
+              window.oRequestAnimationFrame      || 
+              window.msRequestAnimationFrame     || 
+              function(/* function */ callback, /* DOMElement */ element){
+                window.setTimeout(callback, 1000 / 60);
+              };
+    })();
+
+	console.log("loading : stage 2");
+	// set the scene size
+	var WIDTH = window.innerWidth,
+	    HEIGHT = window.innerHeight;
+	
+	// set some camera attributes
+	var VIEW_ANGLE = 45,
+	    ASPECT = WIDTH / HEIGHT,
+	    NEAR = 100,
+	    FAR = 10000;
+	
+	console.log("loading : stage 3");
+	// get the DOM element to attach to
+	// - assume we've got jQuery to hand
+	var $container = $('#container');
+	
+	// create a WebGL renderer, camera
+	// and a scene
+	var renderer = new THREE.WebGLRenderer();
+	var camera = new THREE.Camera(  VIEW_ANGLE,
+	                                ASPECT,
+	                                NEAR,
+	                                FAR  );
+	var scene = new THREE.Scene();
+	
+	console.log("loading : stage 4");
+	// the camera starts at 0,0,0 so pull it back
+	camera.position.z = 300;
+	
+	// start the renderer - set the clear colour
+	// to a full black
+	renderer.setClearColor(new THREE.Color(0x000000));
+	renderer.setSize(WIDTH, HEIGHT);
+	
+	// attach the render-supplied DOM element
+	$container.append(renderer.domElement);
+	
+	console.log("loading : stage 5");
+	THREE.ImageUtils.crossOrigin = 'anonymous';
+	
+	// create the particle variables
+		var particleSystems = [];
+		
+		var particleSystem;
+
+
+	function init() {
+		console.log(APP.data[0].cnt);
+		particleCount = APP.data[0].cnt,
+	    particles = new THREE.Geometry(),
+	    colors = [ 0xff0000, 0xff00ff, 0xffffff, 0x00ffff, 0xffff00, 0x00ff00];
+
+	    for(var i = 0; i < 1; i++) {
+		    color = colors[i];
+			particleSystems.push(ANIM.buildParticleSystem(APP.data[i].cnt, new THREE.Geometry(), color));
+		
+			particleSystems[i].position.x = (i * 150) - 130;
+			particleSystems[i].position.y = i % 2 === 0 ? 50 : -50;
+			particleSystems[i].position.z = -200;
+		
+			scene.addChild(particleSystems[i]);
+
+		}
+
+	    particleSystem = ANIM.buildParticleSystem(particleCount, particles, color);
+
+		// add it to the scene
+		scene.addChild(particleSystem);
+
+			console.log(particleSystem);
+
+		console.log("loading : stage 8");
+		particleSystem.position.x = 00;
+		particleSystem.position.y = -00;
+		particleSystem.position.z = -200;
+
+		// animation loop
+		requestAnimFrame(update);
+	}
+	
+	function triggerAnimation(x1, y1, z1, shape) {
+		console.log("triggered");
+		for( var i = 0; i < particleSystems.length; i++) {
+			ANIM.animateShape(particleSystems[i].geometry, x1, y1, z1, shape);
+		}
+	}
+	
+	document.getElementById('btnAnimLeft').addEventListener('click', function(){
+	    triggerAnimation(-100,0,0,1);
+	});
+	document.getElementById('btnAnimCentre').addEventListener('click', function(){
+	    triggerAnimation(0,0,0,1);
+	});
+	document.getElementById('btnAnimRight').addEventListener('click', function(){
+	    triggerAnimation(100,0,0,1);
+	});
+	document.getElementById('btnAnimLeftCube').addEventListener('click', function(){
+	    triggerAnimation(-100,0,0,0);
+	});
+	document.getElementById('btnAnimCentreCube').addEventListener('click', function(){
+	    triggerAnimation(0,0,0,0);
+	});
+	document.getElementById('btnAnimRightCube').addEventListener('click', function(){
+	    triggerAnimation(100,0,0,0);
+	});
+
+	function update() {
+		
+    	TWEEN.update();
+		// add some rotation to the system
+		for ( var i = 0; i < particleSystems.length; i++) {
+			particleSystems[i].rotation.x += 0.01;
+		}
+		particleSystem.rotation.y += 0.01;
+		//particleSystem.rotation.z += 0.01;
+		
+		//var pCount = particleCount;
+		//while(pCount--) {
+			// get the particle
+			//var particle = particles.vertices[pCount];
+			
+			// check if we need to reset
+		//	if(particle.position.x >= 600) {
+			//	particle.velocity.x =1;
+			//	particle.position.x = randomSpherePoint(0,0,0, 50)[0];
+		//	}
+			
+			// update the velocity
+			//particle.velocity.x += 0.01;
+			
+			// and the position
+			//particle.position.addSelf(
+			//	particle.velocity);
+		//}
+		
+		// flag to the particle system that we've
+		// changed its vertices. This is the
+		// dirty little secret.
+		//particleSystem.geometry.__dirtyVertices = true;
+		
+		renderer.render(scene, camera);
+			// animation loop
+		requestAnimFrame(update);
+	}
+
+	function setupTween(_index, _destX, _destY, _destZ, _dur, _easing) {
+
+	    var index = _index;
+	    var currX = particles.vertices[index].position.x;
+	    var currY = particles.vertices[index].position.y;
+	    var currZ = particles.vertices[index].position.z;
+	    var destX = _destX; var destY = _destY; var destZ = _destZ;
+	    var duration = _dur; var easing;
+	    if(_easing){
+	      easing = _easing;
+	    }
+	    else {
+	      easing = TWEEN.Easing.Quintic.InOut;
+	    }
+
+	    var tween = new TWEEN.Tween({ x: currX, y: currY, z: currZ })
+	      .to({ x: destX, y: destY, z: destZ }, duration)
+	        .onUpdate(function(){
+	          particles.vertices[index].position.x = this.x;
+	          particles.vertices[index].position.y = this.y;
+	          particles.vertices[index].position.z = this.z;
+	        }).easing( easing ).start();
+	}
+	function setupTween(particle, x1, y1, z1, dur) {
+		var tween = new TWEEN.Tween({ x: particle.position.x, y: particle.position.y, z: particle.position.z })
+	      .to({ x: x1, y: y1, z: z1 }, dur)
+	        .onUpdate(function(){
+	          particle.position.x = this.x;
+	          particle.position.y = this.y;
+	          particle.position.z = this.z;
+	        }).easing( TWEEN.Easing.Quintic.InOut ).start();
+	}
+	</script>
+</html>

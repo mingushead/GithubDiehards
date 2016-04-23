@@ -1,0 +1,164 @@
+@import url(//fonts.googleapis.com/css?family=Open+Sans:300,400,600);
+
+button {
+	font-family: 'Open Sans', sans-serif;
+	z-index: 100;
+	background-image: none;
+	border: none;
+	margin: none;
+	background: #fff;
+}
+body {
+	font-family: 'Open Sans', sans-serif;
+	font-weight: 600;
+	text-align: center;
+}
+#home-link {
+	z-index:  1000;
+	position: absolute;
+	height: 4vw;
+	width: 4vw;
+	background: #f00;
+	left: 2vw;
+	top:0.75vw;
+}
+#home-link > div {
+	background: #ff0;
+	position: absolute;
+	width:4vw;
+	height:4vw;
+	background-image: url('./images/logo.jpg');
+	background-size: cover;
+}
+#container {
+	z-index: 0;
+	width: 100%;
+	height: 100%;
+	background: #fff;
+	left:0px;
+	top:0px;
+}
+
+#legend-container, #controls-container {
+	color: #fff;
+	position: relative;
+	text-align: center;
+	width: 75%;
+	margin: 0vh 12.5%;
+	padding: 1vh 1vh;
+	background: #333;
+	border-radius: 0.5vw;
+}
+#controls-container {
+	display: flex;
+	top: -100vh;
+	z-index: 1000;
+}
+#controls-container > div {
+	width: 50%;
+}
+#controls-container > div > span {
+	width: 100%;
+	font-weight: 400;
+	font-size: 1vw;
+	margin: 0 1vw;
+}
+#btnAnimShowAll {
+	margin: 0 1vw;
+}
+#graph-info-container {
+	font-weight: 400;
+	width: 100vw;
+	display: flex;
+	position: relative;
+	top:-18vh;
+	color: #111;
+	text-align: center;
+}
+#graph-info-container > span {
+	width: 50%;
+}
+#legend-container {
+	top : -22vh;
+}
+#legend-container > button, #controls-container > div > button {
+	font-size: 1vw;
+	font-weight: 600;
+	color: #333;
+	border-radius: 0.125vw;
+	padding: 0.25vw 0.5vw;
+	opacity: 0.8;
+}
+#legend-container > button:hover, #controls-container > div > button:hover {
+	opacity: 1;
+}
+#legend-container > button {
+	color:#fff;
+	margin: 0vh 0.5vw;
+}
+#graph-info-container {
+	z-index: 1000;
+	position: relative;
+	top: -25vh;
+	opacity: 0;
+	transition: opacity 300ms;
+}
+#graph-info-container > span > span {
+	font-weight: 600;
+}
+#js-btn {
+	background: #aaaa00;
+}
+#rb-btn {
+	background: #661188;
+}
+#jv-btn {
+	background: #229944;
+}
+#py-btn {
+	background: #990055;
+}
+#php-btn {
+	background: #002299;
+}
+#cplu-btn {
+	background: #777788;
+}
+#html-btn {
+	background: #00aaaa;
+}
+#css-btn {
+	background: #cc0033;
+}
+#c-btn {
+	background: #11dd77;
+}
+#csha-btn {
+	background: #ee7711;
+}
+
+
+h1, h4 {
+	opacity: 0.9;
+}
+h1 {
+	font-size: 5vw;
+}
+p {
+	font-size: 1.5vw;
+	font-weight: 300;
+	padding: 0 18.75vw 16.667vh 18.75vw;
+}
+.banner {
+	opacity: 0.9;
+}
+.footer {
+	position: absolute;
+	left: 0;
+	width: 100%;
+	background: #444;
+	color: #fff;
+}
+.footer > p {
+	padding: 5vh 0;
+}

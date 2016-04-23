@@ -1,0 +1,282 @@
+<!doctype html>
+<html>
+<head>
+	<meta charset="utf-8" />
+	<title>Github Diehards</title>
+	<link rel="shortcut icon" href="images/gitDielogo.png"/>
+	<meta name="description" content="3D Data visualisation depicting certain Github activity over a period on 01-01-2016.">
+	<meta name="tags" content="OpenGl, Threejs,  Data visualization, Github">
+</head>
+<body>
+	
+	<a id="home-link" href="http://eamon.design"><div></div><a/>
+	
+	<div id="container">
+	</div>
+	<div id="controls-container">
+		<div id="pull-reqs-controls-container">
+			<span>Pull requests:</span>
+			<button id="btnAnimCentre">By language : Spheres</button>
+			<button id="btnAnimCentreCube">By language : Cubes</button>
+			<button id="btnAnimShowAll">All</button>
+		</div>
+		<div id="forks-controls-container">
+			<span>Average no. of Forks:</span>
+			<button id="btnViewForks">By language</button>
+		</div>
+	</div>
+	<div id="graph-info-container">
+		<span id="pReq-info-container">PullRequest Count:<span id="pReqCnt"></span></span> 
+		<span id="fork-info-container">Average forks per repo:<span id="forkCnt"></span></span> 
+	</div>
+	<div id="legend-container">
+		<button onmouseover="addHighlight(0)" onmouseout="removeHighlight(0)" id="js-btn">Javascript</button>
+		<button onmouseover="addHighlight(1)" onmouseout="removeHighlight(1)" id="rb-btn">Ruby</button>
+		<button onmouseover="addHighlight(2)" onmouseout="removeHighlight(2)" id="jv-btn">Java</button>
+		<button onmouseover="addHighlight(3)" onmouseout="removeHighlight(3)" id="py-btn">Python</button>
+		<button onmouseover="addHighlight(4)" onmouseout="removeHighlight(4)" id="php-btn">PHP</button>
+		<button onmouseover="addHighlight(5)" onmouseout="removeHighlight(5)" id="cplu-btn">C++</button>
+		<button onmouseover="addHighlight(6)" onmouseout="removeHighlight(6)" id="html-btn">HTML</button>
+		<button onmouseover="addHighlight(7)" onmouseout="removeHighlight(7)" id="css-btn">CSS</button>
+		<button onmouseover="addHighlight(8)" onmouseout="removeHighlight(8)" id="c-btn">C</button>
+		<button onmouseover="addHighlight(9)" onmouseout="removeHighlight(9)" id="csha-btn">C#</button>
+	</div>
+
+	<div class="banner">
+		<h1>Github Diehards</h1>
+		<p>Data-visualisation describing all PullRequestEvents registered with Github between the hours of 00:00 and 12:00 on the 1st January, 2016. Each particle represents a specific event. Particles are arbitrarily coloured according to the language of the repository to which the PullRequest was sent. Data is also available describing the average number of forks present on the repository which was queried, also sorted by language. All data was gathered from <a href="http://www.githubarchive.org">Githubarchive</a>. The animation was built on Three.js, which utilizes WebGL. The source is available on <a href="http://https://github.com/mingushead">Github</a>, as well as the methodology according to which the data was gleaned. Inspired by <a href="http://https://github.com/mingusheadgraphoverflow.com/graphs/an-hour-on-github.html">this</a>.</p>
+	</div>
+	<div class="footer">
+		<p>Eamon Muldowney 2016</p>
+	</div>
+
+</body>
+<link href="style.css" rel="stylesheet">
+<script src="js/jquery.min.js"></script>
+<script src="js/three.min.js"></script>
+<script src="js/tween.js"></script>
+<script src="js/anim_utils.js"></script>
+<script type="text/javascript" src="./data/data.json"></script>
+<script type="text/javascript">
+
+var APP = {};
+APP.isRotationStopped = false;
+$.getJSON("./data/data.json", function(_data) {
+	APP.data = _data.reverse();
+	init();
+});
+
+window.requestAnimFrame = (function(){
+  return  window.requestAnimationFrame       || 
+          window.webkitRequestAnimationFrame || 
+          window.mozRequestAnimationFrame    || 
+          window.oRequestAnimationFrame      || 
+          window.msRequestAnimationFrame     || 
+          function(callback, element){
+            window.setTimeout(callback, 1000 / 60);
+          };
+})();
+
+var WIDTH = window.innerWidth,
+    HEIGHT = window.innerHeight;
+
+var VIEW_ANGLE = 45,
+    ASPECT = WIDTH / HEIGHT,
+    NEAR = 100,
+    FAR = 10000;
+
+var $container = $('#container');
+
+var scene = new THREE.Scene();
+var camera = new THREE.PerspectiveCamera( VIEW_ANGLE, ASPECT, NEAR, FAR );
+camera.position.z = 500;
+//scene.fog = new THREE.Fog( 0x000000, 200, 1000 );
+var renderer = new THREE.WebGLRenderer();
+renderer.setSize( WIDTH, HEIGHT );
+document.body.appendChild( renderer.domElement );
+renderer.setClearColor(new THREE.Color(0xffffff));
+renderer.setSize(WIDTH, HEIGHT);
+renderer.setPixelRatio( window.devicePixelRatio );
+$container.append(renderer.domElement);
+
+// create the particle variables
+	var particleSystems = [];
+	var colors = [ 0x2222ff, 0x88dd66, 0x8844ff, 0x44ff88, 0xffff66,
+			      0x888888, 0xff4444, 0x00ddff, 0xff00ff, 0x0044ff];
+
+function init() {
+
+    var particles = new THREE.Geometry(),
+    sprite = new THREE.TextureLoader().load( "./images/particle1.png" );
+
+    for(var i = 0; i < 10; i++) {
+	    color = colors[i];
+		particleSystems.push(
+			ANIM.buildParticleSystem(APP.data[i].cnt, new THREE.Geometry(), color, sprite, 0,0,0)
+		);
+
+		particleSystems[i].position.x = 0;
+		particleSystems[i].position.y = 0;
+		particleSystems[i].position.z = -200;
+
+		scene.add(particleSystems[i]);
+	}
+	window.addEventListener( 'resize', onWindowResize, false );
+	var legendContainer = document.getElementById('legend-container');
+	var legendBtnIds = [];
+	
+	// animation loop
+	requestAnimFrame(update);
+}
+
+function triggerAnimation(x1, y1, z1, shape) {
+	var total = 0;
+	var index = 0;
+	for( var i = 0; i < particleSystems.length; i++) {
+		total += particleSystems[i].geometry.vertices.length;
+	}
+	for( var i = 0; i < particleSystems.length; i++) {
+		index +=  (i > 0 ? particleSystems[i-1].geometry.vertices.length : 0);
+		ANIM.animateShape(particleSystems[i].geometry, x1, y1, z1, shape, index, total);
+		spreadPointsSystems(i, shape);
+	}
+}
+function viewForks() {
+	for( var i = 0; i < particleSystems.length; i++) {
+		ANIM.animateParticlesToForksView(i, particleSystems[i].geometry, (i * 40) - 200,0,-200);
+		animateSystemsToForksView(i);
+	}
+}
+function tester() {
+	ANIM.conjoinSpheres(particleSystems, 0, 0, 0);
+	for(var i = 0; i < particleSystems.length; i++) {
+		spreadPointsSystems(i, 0);
+	}
+}
+function addHighlight(i) {
+	document.getElementById('pReqCnt').textContent=APP.data[i].cnt;
+	document.getElementById('forkCnt').textContent=APP.data[i].forks;
+	$('#graph-info-container').css('opacity', 0.9);
+	new TWEEN.Tween({ s: 14 })
+      .to({ s:30 }, 500)
+        .onUpdate(function(){
+          particleSystems[i].material.size = this.s;
+        }).easing( TWEEN.Easing.Quintic.InOut ).start();
+}
+function removeHighlight(i) {
+	$('#graph-info-container').css('opacity', 0);
+	new TWEEN.Tween({ s: 30 })
+      .to({ s: 14 }, 500)
+        .onUpdate(function(){
+          particleSystems[i].material.size = this.s;
+        }).easing( TWEEN.Easing.Quintic.InOut ).start();
+}
+document.getElementById('btnAnimCentre').addEventListener('click', function(){
+    triggerAnimation(0,0,0,1);
+});
+document.getElementById('btnAnimShowAll').addEventListener('click', function(){
+    tester();
+});
+document.getElementById('btnAnimCentreCube').addEventListener('click', function(){
+    triggerAnimation(0,0,0,0);
+});
+document.getElementById('btnViewForks').addEventListener('click', function(){
+    viewForks();
+});
+
+function update() {
+	
+	TWEEN.update();
+	// add some rotation to the system
+	for ( var i = 0; i < particleSystems.length; i++) {
+		if(!APP.isRotationStopped){
+			particleSystems[i].rotation.x += 0.003;
+			particleSystems[i].rotation.z += 0.003;
+		}
+
+		particleSystems[i].rotation.y += 0.003;			
+		particleSystems[i].geometry.verticesNeedUpdate = true;
+	}
+	
+	renderer.render(scene, camera);
+	// animation loop
+	requestAnimFrame(update);
+}
+
+function spreadPointsSystems(index, isSpread) {
+	var i = index;
+
+	var dest = [ 0, 0, -200 ];
+	var rad = particleSystems[i].geometry.vertices.length / 15;
+	APP.isRotationStopped = false;
+	if(isSpread) {
+		var row1Offset = 0;
+		var row2Offset = 0;
+		for(var j = 1; j <= i; j++) {
+			row1Offset += (particleSystems[j-1].geometry.vertices.length / 15)*2;
+			row1Offset += 80;
+		}
+		for(var k = 5; k <= i; k++) {
+			row2Offset += (particleSystems[k-1].geometry.vertices.length / 15)*2;
+			row2Offset += 80;
+		}
+		dest = [ i < 5 ? row1Offset - 340 : row2Offset - 360, i < 5 ? 80 : -80, -200 ];
+		dest[0] += i === 0 ? 40 : 0;
+	}
+    new TWEEN.Tween({ x: particleSystems[i].position.x, y: particleSystems[i].position.y, z: particleSystems[i].position.z })
+      .to({ x: dest[0], y: dest[1], z: dest[2] }, 5000)
+        .onUpdate(function(){
+          particleSystems[i].position.x = this.x;
+          particleSystems[i].position.y = this.y;
+          particleSystems[i].position.z = this.z;
+        }).easing( TWEEN.Easing.Quintic.InOut ).start();
+}
+function animateSystemsToForksView(index) {
+	var i = index;
+	var dest = [ (i * 75) - 350, 0, -170];
+
+	APP.isRotationStopped = true;
+
+	new TWEEN.Tween({ x: particleSystems[index].position.x, y: particleSystems[index].position.y, z: particleSystems[index].position.z })
+      .to({ x: dest[0], y: dest[1], z: dest[2] }, 5000)
+        .onUpdate(function(){
+          particleSystems[index].position.x = this.x;
+          particleSystems[index].position.y = this.y;
+          particleSystems[index].position.z = this.z;
+        }).easing( TWEEN.Easing.Quintic.InOut ).start();
+        var zeroRotateX = particleSystems[index].rotation.x % (Math.PI * 2);
+        var zeroRotateY = particleSystems[index].rotation.y % (Math.PI * 2);
+        var zeroRotateZ = particleSystems[index].rotation.z % (Math.PI * 2);
+
+        var zeroRotateParams = [particleSystems[index].rotation.x - zeroRotateX, particleSystems[index].rotation.y - zeroRotateY, particleSystems[index].rotation.z - zeroRotateZ, ]
+    new TWEEN.Tween({ x: particleSystems[index].rotation.x, y: particleSystems[index].rotation.y, z: particleSystems[index].rotation.z })
+      .to({ x: zeroRotateParams[0], y: zeroRotateParams[1], z: zeroRotateParams[2] }, 5000)
+        .onUpdate(function(){
+          particleSystems[index].rotation.x = this.x;
+          particleSystems[index].rotation.y = this.y;
+          particleSystems[index].rotation.z = this.z;
+        }).easing( TWEEN.Easing.Quintic.InOut ).start();
+}
+function setupTween(particle, coords, dur) {
+	var x1 = coords[0];
+	var y1 = coords[1];
+	var z1 = coords[2];
+
+	var tween = new TWEEN.Tween({ x: particle.x, y: particle.y, z: particle.z })
+      .to({ x: x1, y: y1, z: z1 }, dur)
+        .onUpdate(function(){
+          particle.x = this.x;
+          particle.y = this.y;
+          particle.z = this.z;
+        }).easing( TWEEN.Easing.Quintic.InOut ).start();
+}
+
+function onWindowResize() {
+
+	camera.aspect = window.innerWidth / window.innerHeight;
+	camera.updateProjectionMatrix();
+
+	renderer.setSize( window.innerWidth, window.innerHeight );
+}
+</script>
+</html>
